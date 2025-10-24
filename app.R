@@ -55,7 +55,13 @@ ui <- fluidPage(
        selected = "all"
      ),
       h2("Select a Sample Size"),
-      "Put your slider for sample size here. Give this an ID of corr_n.",
+     sliderInput(
+       "corr_n",
+       "Set value",
+       min = 20,
+       max = 500,
+       value = 10
+     ),
       actionButton("corr_sample","Get a Sample!")
     ),
     mainPanel(
@@ -75,7 +81,6 @@ ui <- fluidPage(
       )
     )
   ),
-  textOutput("selected_hhl_corr")
 )
 
 # Define server logic required to draw a histogram
@@ -119,7 +124,7 @@ server <- function(input, output, session) {
     #this object should have two elements, corr_data and corr_truth
     #both should be set to null to start with!
 
-
+  #  sample_corr <- reactiveValues(list("corr_data" = NULL, "corr_truth" = NULL))
 
     # ##############################################################
     # #Uncomment the next large block of code to go in an
@@ -156,40 +161,40 @@ server <- function(input, output, session) {
       } else {
         schl_sub <- SCHLvals[as.character(20:24)]
       })
-    # 
-    #   corr_vars <- c(input$corr_x, input$corr_y)
-    # 
-    #   subsetted_data <- my_sample |>
-    #     filter(#cat vars first
-    #       HHLfac %in% hhl_sub,
-    #       FSfac %in% fs_sub,
-    #       SCHLfac %in% schl_sub
-    #     ) %>% #make sure numeric variables are in appropriate range, must use %>% here for {} to work
-    #     {if("WKHP" %in% corr_vars) filter(., WKHP > 0) else .} %>%
-    #     {if("VALP" %in% corr_vars) filter(., !is.na(VALP)) else .} %>%
-    #     {if("TAXAMT" %in% corr_vars) filter(., !is.na(TAXAMT)) else .} %>%
-    #     {if("GRPIP" %in% corr_vars) filter(., GRPIP > 0) else .} %>%
-    #     {if("GASP" %in% corr_vars) filter(., GASP > 0) else .} %>%
-    #     {if("ELEP" %in% corr_vars) filter(., ELEP > 0) else .} %>%
-    #     {if("WATP" %in% corr_vars) filter(., WATP > 0) else .} %>%
-    #     {if("PINCP" %in% corr_vars) filter(., AGEP > 18) else .} %>%
-    #     {if("JWMNP" %in% corr_vars) filter(., !is.na(JWMNP)) else .}
-    # 
-    #   index <- sample(1:nrow(subsetted_data),
-    #                   size = input$corr_n,
-    #                   replace = TRUE,
-    #                   prob = subsetted_data$PWGTP/sum(subsetted_data$PWGTP))
-    #   #***You now need to update the sample_corr reactive value object***
-    #   #the corr_data argument should be updated to be the subsetted_data[index,]
-    #   #the corr_truth argument should be updated to be the correlation between
-    #   #the two variables selected. This can be found with this code:
-    #   #cor(sample_corr$corr_data |> select(corr_vars))[1,2]
-    ####################################################################
+
+      # corr_vars <- c(input$corr_x, input$corr_y)
+      # 
+      # subsetted_data <- my_sample |>
+      #   filter(#cat vars first
+      #     HHLfac %in% hhl_sub,
+      #     FSfac %in% fs_sub,
+      #     SCHLfac %in% schl_sub
+      #   ) %>% #make sure numeric variables are in appropriate range, must use %>% here for {} to work
+      #   {if("WKHP" %in% corr_vars) filter(., WKHP > 0) else .} %>%
+      #   {if("VALP" %in% corr_vars) filter(., !is.na(VALP)) else .} %>%
+      #   {if("TAXAMT" %in% corr_vars) filter(., !is.na(TAXAMT)) else .} %>%
+      #   {if("GRPIP" %in% corr_vars) filter(., GRPIP > 0) else .} %>%
+      #   {if("GASP" %in% corr_vars) filter(., GASP > 0) else .} %>%
+      #   {if("ELEP" %in% corr_vars) filter(., ELEP > 0) else .} %>%
+      #   {if("WATP" %in% corr_vars) filter(., WATP > 0) else .} %>%
+      #   {if("PINCP" %in% corr_vars) filter(., AGEP > 18) else .} %>%
+      #   {if("JWMNP" %in% corr_vars) filter(., !is.na(JWMNP)) else .}
+      # 
+      # index <- sample(1:nrow(subsetted_data),
+      #                 size = input$corr_n,
+      #                 replace = TRUE,
+      #                 prob = subsetted_data$PWGTP/sum(subsetted_data$PWGTP))
+      # #***You now need to update the sample_corr reactive value object***
+      # #the corr_data argument should be updated to be the subsetted_data[index,]
+      # #the corr_truth argument should be updated to be the correlation between
+      # #the two variables selected. This can be found with this code:
+      # cor(sample_corr$corr_data |> select(corr_vars))[1,2]
+    ###################################################################
 
 
 
     # #Create a renderPlot() object to output a scatter plot
-    # #Use the code below to validate that data exists, (this goes in the renderPlot and you'll need 
+    # #Use the code below to validate that data exists, (this goes in the renderPlot and you'll need
     # #to install the shinyalert package if you don't have it) and then create the appropriate
     # #scatter plot
     #   validate(
