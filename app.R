@@ -71,7 +71,7 @@ ui <- fluidPage(
       actionButton("corr_sample","Get a Sample!")
     ),
     mainPanel(
-      
+      #place output$scatter in UI
       plotOutput("scatter"),
       
       conditionalPanel("input.corr_sample", #only show if a sample has been taken
