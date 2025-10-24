@@ -9,8 +9,10 @@ my_sample <- readRDS("my_sample_temp.rds")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-
-  title = "Correlation Exploration",
+  
+  titlePanel("Evan Gray - HW 7 - Correlation Exploration"),
+  #title = "Evan Gray - HW 7 - Correlation Exploration", #names browser tab
+  
   sidebarLayout(
     sidebarPanel(
       h2("Select Variables to Find Correlation:"),
@@ -26,7 +28,7 @@ ui <- fluidPage(
           choices = numeric_vars,
           selected = "VALP"
       ),
-     # br(),
+      br(),
       h2("Choose a Subset of the Data:"),
         radioButtons(
           "hhl_corr",
@@ -133,9 +135,11 @@ server <- function(input, output, session) {
     # #Uncomment the next large block of code to go in an
     # #observeEvent() to look for the action button (corr_sample)
     # #Note you can highlight and bulk comment/uncomment (ctrl+shift+c or similar on mac)
-   observeEvent(input$corr_sample, {
    
-    observeEvent(input$hhl_corr,
+   observeEvent(
+     input$corr_sample, {
+   
+
       if(input$hhl_corr == "all"){
         hhl_sub <- HHLvals
       } else if(input$hhl_corr == "english only"){
@@ -144,16 +148,16 @@ server <- function(input, output, session) {
         hhl_sub <- HHLvals["2"]
       } else {
         hhl_sub <- HHLvals[c("0", "3", "4", "5")]
-      })
-    observeEvent(input$fs_corr,
+      }
+
       if(input$fs_corr == "all"){
         fs_sub <- FSvals
       } else if(input$fs_corr == "yes"){
         fs_sub <- FSvals["1"]
       } else {
         fs_sub <- FSvals["2"]
-      })
-    observeEvent(input$schl_corr,
+      }
+
       if(input$schl_corr == "all"){
         schl_sub <- SCHLvals
       } else if(input$schl_corr == "High School not Completed"){
@@ -164,24 +168,14 @@ server <- function(input, output, session) {
         schl_sub <- SCHLvals[as.character(16:19)]
       } else {
         schl_sub <- SCHLvals[as.character(20:24)]
-      })
-}
-)
+      }
 
-      
 
-   reactive ({
-     input$corr_x
-     input$corr_y
      
      corr_vars <- c(input$corr_x, input$corr_y)
      
-   })
     
   
-
-
- observe({  
         subsetted_data <- my_sample |>
         filter(#cat vars first
           HHLfac %in% hhl_sub,
@@ -197,25 +191,22 @@ server <- function(input, output, session) {
         {if("WATP" %in% corr_vars) filter(., WATP > 0) else .} %>%
         {if("PINCP" %in% corr_vars) filter(., AGEP > 18) else .} %>%
         {if("JWMNP" %in% corr_vars) filter(., !is.na(JWMNP)) else .}
- })     
+   
 
-    reactive({
-      input$corr_n
       
       index <- sample(1:nrow(subsetted_data),
                       size = input$corr_n,
                       replace = TRUE,
                       prob = subsetted_data$PWGTP/sum(subsetted_data$PWGTP))
-    })
+
       #***You now need to update the sample_corr reactive value object***
       #the corr_data argument should be updated to be the subsetted_data[index,]
     sample_corr$corr_data <- subsetted_data[index,]
       #the corr_truth argument should be updated to be the correlation between
       #the two variables selected. This can be found with this code:
-    #sample_corr$corr_truth <- 
-    cor(sample_corr$corr_data |> select(corr_vars))[1,2]
+    sample_corr$corr_truth <- cor(sample_corr$corr_data |> select(corr_vars))[1,2]
     
-
+  })
     ###################################################################
 
 
@@ -223,37 +214,40 @@ server <- function(input, output, session) {
     # #Create a renderPlot() object to output a scatter plot
     # #Use the code below to validate that data exists, (this goes in the renderPlot and you'll need
     # #to install the shinyalert package if you don't have it) and then create the appropriate
-    # #scatter plot
-     # validate(
-     #    need(!is.null(sample_corr$corr_data), "Please select your variables, subset, and click the 'Get a Sample!' button.")
-     #  )
-    output$scatter <- renderPlot({ 
+    #scatter plot
+   output$scatter <- renderPlot({ 
+   
+     validate(
+       need(!is.null(sample_corr$corr_data), "Please select your variables, subset, and click the 'Get a Sample!' button.")
+     )
+  
         ggplot(sample_corr$corr_data, aes_string(x = isolate(input$corr_x), y = isolate(input$corr_y))) +
         geom_point()
+        
           })
 
     
 
     #This code does the correlation guessing game! Nothign to change here
-    # observeEvent(input$corr_submit, {
-    #   close <- abs(input$corr_guess - sample_corr$corr_truth) <= .05
-    #   if(close){
-    #     shinyalert(title = "Nicely done!",
-    #                paste0("The sample correlation is ",
-    #                       round(sample_corr$corr_truth, 4),
-    #                       "."),
-    #                type = "success"
-    #     )
-    #   } else {
-    #     if(input$corr_guess > sample_corr$corr_truth){
-    #       shinyalert(title = "Try again!",
-    #                  "Try guessing a lower value.")
-    #     } else {
-    #       shinyalert(title = "Try again!",
-    #                  "Try guessing a higher value.")
-    #     }
-    #   }
-    # })
+    observeEvent(input$corr_submit, {
+      close <- abs(input$corr_guess - sample_corr$corr_truth) <= .05
+      if(close){
+        shinyalert(title = "Nicely done!",
+                   paste0("The sample correlation is ",
+                          round(sample_corr$corr_truth, 4),
+                          "."),
+                   type = "success"
+        )
+      } else {
+        if(input$corr_guess > sample_corr$corr_truth){
+          shinyalert(title = "Try again!",
+                     "Try guessing a lower value.")
+        } else {
+          shinyalert(title = "Try again!",
+                     "Try guessing a higher value.")
+        }
+      }
+    })
     
     
 }
