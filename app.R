@@ -4,19 +4,56 @@ library(tidyverse)
 
 source("helpers.R")
 
+my_sample <- readRDS("my_sample_temp.rds")
+
 # Define UI for application that draws a histogram
 ui <- fluidPage(
 
-  "Add a title panel here!",
+  title = "Correlation Exploration",
   sidebarLayout(
     sidebarPanel(
       h2("Select Variables to Find Correlation:"),
-      "Put your selectize inputs here!",
-      "Give them internal IDs of corr_x and corr_y.",
-      "Note the vector with these names comes from the helpers.R files. The object is called `numeric_vars`. Make sure you don't assign the same initial value to both inputs!",
-      br(),
-      "Place your radio buttons here! One radio button for each variable we may subset on. Set the internal IDs for these to be hhl_corr, fs_corr, and schl_corr.",
-      "Notice that you can use choiceNames and choiceValues to have different values show vs the values you use internally for comparisons. There are 'internal' values already used in the server file - the first large commented section - so you should set the internal values to match those!",
+        selectInput(
+          "corr_x",
+          "x Variable",
+          choices = numeric_vars,
+          selected = "JWMNP"
+        ),
+        selectInput(
+          "corr_y",
+          "y Variable",
+          choices = numeric_vars,
+          selected = "VALP"
+      ),
+     # br(),
+      h2("Choose a Subset of the Data:"),
+        radioButtons(
+          "hhl_corr",
+          "Household Language",
+          choiceNames = list("All","English Only","Spanish","Other"),
+          choiceValues = list(HHLvals,HHLvals["1"],HHLvals["2"],HHLvals[c("0", "3", "4", "5")]),
+          selected = "all"
+        ),
+       radioButtons(
+         "fs_corr",
+         "Snap Recipient",
+         choiceNames = list("All","Yes","No"),
+         choiceValues = list(FSvals,FSvals["1"],FSvals["2"]),
+         selected = "all"
+       ),
+     radioButtons(
+       "schl_corr",
+       "Educational attainment",
+       choiceNames = list("All","High School not Completed", "High School or GED", "College Degree"),
+       choiceValues = list(SCHLvals, 
+                           SCHLvals[c("0", "01", "02", "03", "04",
+                                                "05", "06", "07", "08", "09",
+                                                "10", "11", "12", "13", "14", "15")],
+                           SCHLvals[as.character(16:19)],
+                           SCHLvals[as.character(20:24)]
+                           ),
+       selected = "all"
+     ),
       h2("Select a Sample Size"),
       "Put your slider for sample size here. Give this an ID of corr_n.",
       actionButton("corr_sample","Get a Sample!")
@@ -37,10 +74,9 @@ ui <- fluidPage(
                               actionButton("corr_submit", "Check Your Guess!"))
       )
     )
-  )
+  ),
+  textOutput("selected_hhl_corr")
 )
-
-my_sample <- readRDS("my_sample_temp.rds")
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
@@ -90,35 +126,36 @@ server <- function(input, output, session) {
     # #observeEvent() to look for the action button (corr_sample)
     # #Note you can highlight and bulk comment/uncomment (ctrl+shift+c or similar on mac)
     # 
-    #   if(input$hhl_corr == "all"){
-    #     hhl_sub <- HHLvals
-    #   } else if(input$hhl_corr == "english"){
-    #     hhl_sub <- HHLvals["1"]
-    #   } else if(input$hhl_corr == "spanish"){
-    #     hhl_sub <- HHLvals["2"]
-    #   } else {
-    #     hhl_sub <- HHLvals[c("0", "3", "4", "5")]
-    #   }
-    # 
-    #   if(input$fs_corr == "all"){
-    #     fs_sub <- FSvals
-    #   } else if(input$fs_corr == "yes"){
-    #     fs_sub <- FSvals["1"]
-    #   } else {
-    #     fs_sub <- FSvals["2"]
-    #   }
-    # 
-    #   if(input$schl_corr == "all"){
-    #     schl_sub <- SCHLvals
-    #   } else if(input$schl_corr == "no_hs"){
-    #     schl_sub <- SCHLvals[c("0", "01", "02", "03", "04",
-    #                            "05", "06", "07", "08", "09",
-    #                            "10", "11", "12", "13", "14", "15")]
-    #   } else if(input$schl_corr == "hs"){
-    #     schl_sub <- SCHLvals[as.character(16:19)]
-    #   } else {
-    #     schl_sub <- SCHLvals[as.character(20:24)]
-    #   }
+    observeEvent(input$hhl_corr,
+      if(input$hhl_corr == "all"){
+        hhl_sub <- HHLvals
+      } else if(input$hhl_corr == "english only"){
+        hhl_sub <- HHLvals["1"]
+      } else if(input$hhl_corr == "spanish"){
+        hhl_sub <- HHLvals["2"]
+      } else {
+        hhl_sub <- HHLvals[c("0", "3", "4", "5")]
+      })
+    observeEvent(input$fs_corr,
+      if(input$fs_corr == "all"){
+        fs_sub <- FSvals
+      } else if(input$fs_corr == "yes"){
+        fs_sub <- FSvals["1"]
+      } else {
+        fs_sub <- FSvals["2"]
+      })
+    observeEvent(input$schl_corr,
+      if(input$schl_corr == "all"){
+        schl_sub <- SCHLvals
+      } else if(input$schl_corr == "High School not Completed"){
+        schl_sub <- SCHLvals[c("0", "01", "02", "03", "04",
+                               "05", "06", "07", "08", "09",
+                               "10", "11", "12", "13", "14", "15")]
+      } else if(input$schl_corr == "High School or GED"){
+        schl_sub <- SCHLvals[as.character(16:19)]
+      } else {
+        schl_sub <- SCHLvals[as.character(20:24)]
+      })
     # 
     #   corr_vars <- c(input$corr_x, input$corr_y)
     # 
