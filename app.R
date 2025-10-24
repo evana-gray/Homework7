@@ -5,13 +5,15 @@ library(shinyalert)
 
 source("helpers.R")
 
+#move data reading to top
 my_sample <- readRDS("my_sample_temp.rds")
+
+
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   
   titlePanel("Evan Gray - HW 7 - Correlation Exploration"),
-  #title = "Evan Gray - HW 7 - Correlation Exploration", #names browser tab
   
   sidebarLayout(
     sidebarPanel(
@@ -30,6 +32,7 @@ ui <- fluidPage(
       ),
       br(),
       h2("Choose a Subset of the Data:"),
+      #For choice names values - use results of server function IF conditions and results
         radioButtons(
           "hhl_corr",
           "Household Language",
@@ -96,6 +99,8 @@ server <- function(input, output, session) {
     ##Correlation tab
     #This code makes sure the select boxes update so they can't select the same variable in both!
     #first, update the 'y' selections available
+  
+  #separate observeEvents means these only reevaluate when corr_x or corr_y change
     observeEvent(input$corr_x, {
       corr_x <- input$corr_x
       corr_y <- input$corr_y
@@ -136,6 +141,11 @@ server <- function(input, output, session) {
     # #observeEvent() to look for the action button (corr_sample)
     # #Note you can highlight and bulk comment/uncomment (ctrl+shift+c or similar on mac)
    
+   
+   
+   #Ensure all pieces are coded such that they're within a reactive environment
+   
+   #use single observeEvent to trigger reevaluation any time there's an update to corr_sample
    observeEvent(
      input$corr_sample, {
    
@@ -215,6 +225,8 @@ server <- function(input, output, session) {
     # #Use the code below to validate that data exists, (this goes in the renderPlot and you'll need
     # #to install the shinyalert package if you don't have it) and then create the appropriate
     #scatter plot
+   
+   #renderPlot creates reactive environment
    output$scatter <- renderPlot({ 
    
      validate(
@@ -229,6 +241,8 @@ server <- function(input, output, session) {
     
 
     #This code does the correlation guessing game! Nothign to change here
+   
+   #observeEvent creates reactive environment
     observeEvent(input$corr_submit, {
       close <- abs(input$corr_guess - sample_corr$corr_truth) <= .05
       if(close){
